@@ -609,6 +609,11 @@ class AsyncClient(Client):
             self._handle_joined_state(room_id, join_info, encrypted_rooms)
 
             room = self.rooms[room_id]
+
+            for event in join_info.account_data:
+                room.handle_account_data(event)
+                await self._on_room_account_data(event, room)
+
             decrypted_events: List[Tuple[int, Union[Event, BadEventType]]] = []
 
             for index, event in enumerate(join_info.timeline.events):
@@ -629,10 +634,6 @@ class AsyncClient(Client):
             for event in join_info.ephemeral:
                 room.handle_ephemeral_event(event)
                 await self._on_ephemeral(event, room)
-
-            for event in join_info.account_data:
-                room.handle_account_data(event)
-                await self._on_room_account_data(event, room)
 
             if room.encrypted and self.olm is not None:
                 self.olm.update_tracked_users(room)
