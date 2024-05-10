@@ -611,6 +611,7 @@ class AsyncClient(Client):
             room = self.rooms[room_id]
 
             for event in join_info.account_data:
+                print(f"Handling account event")
                 room.handle_account_data(event)
                 await self._on_room_account_data(event, room)
 
@@ -624,7 +625,7 @@ class AsyncClient(Client):
                 if decrypted_event:
                     event = decrypted_event
                     decrypted_events.append((index, decrypted_event))
-
+                print(f"Handling regular message")
                 await self._on_event(event, room)
 
             # Replace the Megolm events with decrypted ones
