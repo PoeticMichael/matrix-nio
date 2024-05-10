@@ -117,7 +117,8 @@ def store_loaded(fn):
     @wraps(fn)
     def inner(self, *args, **kwargs):
         if not self.store or not self.olm:
-            raise LocalProtocolError("Matrix store and olm account is not loaded.")
+            raise LocalProtocolError(
+                "Matrix store and olm account is not loaded.")
         return fn(self, *args, **kwargs)
 
     return inner
@@ -177,7 +178,8 @@ class ClientConfig:
 
     """
 
-    store: Optional[Type[MatrixStore]] = DefaultStore if ENCRYPTION_ENABLED else None
+    store: Optional[Type[MatrixStore]
+                    ] = DefaultStore if ENCRYPTION_ENABLED else None
 
     encryption_enabled: bool = ENCRYPTION_ENABLED
 
@@ -389,7 +391,8 @@ class Client:
             raise LocalProtocolError("Device id is not set")
 
         if not self.config.store:
-            raise LocalProtocolError("No store class was provided in the config.")
+            raise LocalProtocolError(
+                "No store class was provided in the config.")
 
         if self.config.encryption_enabled:
             if self.config.store is SqliteMemoryStore:
@@ -628,13 +631,15 @@ class Client:
         if isinstance(response, ErrorResponse):
             return
 
-        self.restore_login(response.user_id, response.device_id, response.access_token)
+        self.restore_login(
+            response.user_id, response.device_id, response.access_token)
 
     def _handle_login(self, response: Union[LoginResponse, ErrorResponse]):
         if isinstance(response, ErrorResponse):
             return
 
-        self.restore_login(response.user_id, response.device_id, response.access_token)
+        self.restore_login(
+            response.user_id, response.device_id, response.access_token)
 
     def _handle_logout(self, response: Union[LogoutResponse, ErrorResponse]):
         if not isinstance(response, ErrorResponse):
@@ -701,7 +706,8 @@ class Client:
     def _get_invited_room(self, room_id: str) -> MatrixInvitedRoom:
         if room_id not in self.invited_rooms:
             logger.info(f"New invited room {room_id}")
-            self.invited_rooms[room_id] = MatrixInvitedRoom(room_id, self.user_id)
+            self.invited_rooms[room_id] = MatrixInvitedRoom(
+                room_id, self.user_id)
 
         return self.invited_rooms[room_id]
 
@@ -781,6 +787,12 @@ class Client:
             self._handle_joined_state(room_id, join_info, encrypted_rooms)
 
             room = self.rooms[room_id]
+
+            for event in join_info.account_data:
+                room.handle_account_data(event)
+                print(f"Handling account data in the basic client")
+                self._on_room_account_data(event, room)
+
             decrypted_events: List[Tuple[int, Union[Event, BadEventType]]] = []
 
             for index, event in enumerate(join_info.timeline.events):
@@ -792,6 +804,7 @@ class Client:
                     event = decrypted_event
                     decrypted_events.append((index, decrypted_event))
 
+                print(f"Handling event in the basic client")
                 self._on_event(event, room)
 
             # Replace the Megolm events with decrypted ones
@@ -801,10 +814,6 @@ class Client:
             for event in join_info.ephemeral:
                 room.handle_ephemeral_event(event)
                 self._on_ephemeral(event, room)
-
-            for event in join_info.account_data:
-                room.handle_account_data(event)
-                self._on_room_account_data(event, room)
 
             if room.encrypted and self.olm is not None:
                 self.olm.update_tracked_users(room)
@@ -954,7 +963,8 @@ class Client:
     def _handle_context_response(self, response: RoomContextResponse):
         if isinstance(response.event, MegolmEvent):
             if self.olm:
-                decrypted_event = self.olm._decrypt_megolm_no_error(response.event)
+                decrypted_event = self.olm._decrypt_megolm_no_error(
+                    response.event)
                 response.event = decrypted_event
 
         self._decrypt_event_array(response.events_after)
@@ -1008,7 +1018,8 @@ class Client:
                     ):
                         return
 
-            logger.info(f"Marking outbound group session for room {room_id} as shared")
+            logger.info(
+                f"Marking outbound group session for room {room_id} as shared")
             session.shared = True
 
         elif isinstance(response, KeysQueryResponse):
@@ -1032,7 +1043,8 @@ class Client:
                 room.remove_member(user_id)
 
         for member in response.members:
-            room.add_member(member.user_id, member.display_name, member.avatar_url)
+            room.add_member(member.user_id, member.display_name,
+                            member.avatar_url)
 
         room.members_synced = True
 
@@ -1185,7 +1197,8 @@ class Client:
         room = self.rooms[room_id]
 
         if not room.encrypted:
-            raise LocalProtocolError(f"Room with id {room_id} is not encrypted")
+            raise LocalProtocolError(
+                f"Room with id {room_id} is not encrypted")
 
         return self.olm.get_missing_sessions(list(room.users))
 
