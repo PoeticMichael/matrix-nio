@@ -611,6 +611,7 @@ class AsyncClient(Client):
 
             room = self.rooms[room_id]
 
+            print(f"room: {room_id}, account_data: {join_info.account_data}")
             for event in join_info.account_data:
                 room.handle_account_data(event)
                 await self._on_room_account_data(event, room)
