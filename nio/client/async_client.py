@@ -288,7 +288,8 @@ def client_session(func):
             trace = TraceConfig()
             trace.on_request_chunk_sent.append(on_request_chunk_sent)
 
-            connector = ProxyConnector.from_url(self.proxy) if self.proxy else None
+            connector = ProxyConnector.from_url(
+                self.proxy) if self.proxy else None
             self.client_session = ClientSession(
                 timeout=ClientTimeout(total=self.config.request_timeout),
                 trace_configs=[trace],
@@ -611,7 +612,6 @@ class AsyncClient(Client):
             room = self.rooms[room_id]
 
             for event in join_info.account_data:
-                print(f"Handling account event")
                 room.handle_account_data(event)
                 await self._on_room_account_data(event, room)
 
@@ -625,7 +625,6 @@ class AsyncClient(Client):
                 if decrypted_event:
                     event = decrypted_event
                     decrypted_events.append((index, decrypted_event))
-                print(f"Handling regular message")
                 await self._on_event(event, room)
 
             # Replace the Megolm events with decrypted ones
@@ -808,7 +807,8 @@ class AsyncClient(Client):
                 # method generated during runtime that may or may not be
                 # Awaitable. The actual type is a union of the types that we
                 # can receive from reading files.
-                data = await data_provider(got_429, got_timeouts)  # type: ignore
+                # type: ignore
+                data = await data_provider(got_429, got_timeouts)
 
             try:
                 transport_resp = await self.send(
@@ -993,7 +993,8 @@ class AsyncClient(Client):
         resp = await self.register_interactive(
             username,
             password,
-            auth_dict={"initial_device_display_name": self.device_id or "matrix-nio"},
+            auth_dict={
+                "initial_device_display_name": self.device_id or "matrix-nio"},
         )
         if isinstance(resp, RegisterInteractiveError):
             return RegisterErrorResponse(
@@ -1121,7 +1122,8 @@ class AsyncClient(Client):
         """
 
         if password is None and token is None:
-            raise ValueError("Either a password or a token needs to be provided")
+            raise ValueError(
+                "Either a password or a token needs to be provided")
 
         method, path, data = Api.login(
             self.user,
@@ -1592,7 +1594,8 @@ class AsyncClient(Client):
             >>> await client.update_device(device_id, content)
 
         """
-        method, path, data = Api.update_device(self.access_token, device_id, content)
+        method, path, data = Api.update_device(
+            self.access_token, device_id, content)
 
         return await self._send(UpdateDeviceResponse, method, path, data)
 
@@ -1750,7 +1753,8 @@ class AsyncClient(Client):
             try:
                 room = self.rooms[room_id]
             except KeyError:
-                raise LocalProtocolError(f"No such room with id {room_id} found.")
+                raise LocalProtocolError(
+                    f"No such room with id {room_id} found.")
 
             if room.encrypted:
                 # Check if the members are synced, otherwise users might not get
@@ -1778,7 +1782,8 @@ class AsyncClient(Client):
                 # Relevant spec proposal https://github.com/matrix-org/matrix-doc/pull/1849
                 if message_type != "m.reaction":
                     # Encrypt our content and change the message type.
-                    message_type, content = self.encrypt(room_id, message_type, content)
+                    message_type, content = self.encrypt(
+                        room_id, message_type, content)
 
         method, path, data = Api.room_send(
             self.access_token, room_id, message_type, content, uuid
@@ -2223,10 +2228,12 @@ class AsyncClient(Client):
             raise LocalProtocolError(f"No such room with id {room_id}")
 
         if not room.encrypted:
-            raise LocalProtocolError(f"Room with id {room_id} is not encrypted")
+            raise LocalProtocolError(
+                f"Room with id {room_id} is not encrypted")
 
         if room_id in self.sharing_session:
-            raise LocalProtocolError(f"Already sharing a group session for {room_id}")
+            raise LocalProtocolError(
+                f"Already sharing a group session for {room_id}")
 
         self.sharing_session[room_id] = AsyncioEvent()
 
@@ -2753,7 +2760,8 @@ class AsyncClient(Client):
             limit(int, optional): The maximum number of events to request.
         """
 
-        method, path = Api.room_context(self.access_token, room_id, event_id, limit)
+        method, path = Api.room_context(
+            self.access_token, room_id, event_id, limit)
 
         return await self._send(
             RoomContextResponse, method, path, response_data=(room_id,)
@@ -2945,7 +2953,8 @@ class AsyncClient(Client):
         )
 
         return await self._send(
-            RoomReadMarkersResponse, method, path, data, response_data=(room_id,)
+            RoomReadMarkersResponse, method, path, data, response_data=(
+                room_id,)
         )
 
     @logged_in_async

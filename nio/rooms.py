@@ -432,7 +432,6 @@ class MatrixRoom:
 
     def handle_account_data(self, event: AccountDataEvent) -> None:
         if isinstance(event, FullyReadEvent):
-            print(f"setting Fully read marker to {event.event_id}")
             self.fully_read_marker = event.event_id
 
         if isinstance(event, TagEvent):

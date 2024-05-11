@@ -790,7 +790,6 @@ class Client:
 
             for event in join_info.account_data:
                 room.handle_account_data(event)
-                print(f"Handling account data in the basic client")
                 self._on_room_account_data(event, room)
 
             decrypted_events: List[Tuple[int, Union[Event, BadEventType]]] = []
@@ -804,7 +803,6 @@ class Client:
                     event = decrypted_event
                     decrypted_events.append((index, decrypted_event))
 
-                print(f"Handling event in the basic client")
                 self._on_event(event, room)
 
             # Replace the Megolm events with decrypted ones
